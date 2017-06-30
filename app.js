@@ -7,8 +7,8 @@ author: Tom Hipwell https://github.com/TheOnly-Tom/
 
 // Object types
 function logItem(type,text) { // object for every log item
-  this.time = new Date();
-  this.time = this.time.toLocaleString();
+  time = new Date();
+  this.time = time.getDate() + "/" + time.getMonth() + "/" + time.getFullYear() + " " + time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds() + ":" + time.getMilliseconds();
   this.type = type;
   this.text = text;
   return this;
@@ -110,7 +110,7 @@ var app = {
     app.events.click.event = window.addEventListener("click",app.events.mousemove.handler);
     app.events.keydown.event = window.addEventListener("keydown",app.events.mousemove.handler);
     // logs
-    app.log.logs = [app.logs.verboose, app.logs.info, app.logs.events, app.logs.errors];
+    app.log.logs = [app.log.verboose, app.log.info, app.log.events, app.log.errors]; // sets up the logs to be checked for length
 	  app.log.log("info","App initialized");
 	  this.init.initialized = true;
   },
@@ -160,6 +160,9 @@ var app = {
 		app.runtime.state = "stopped";
 		app.log.log("info","App stopped");
 	},
+  loop: function() {
+    // draw canvas + set variables
+  },
 	state: "stopped",
 	interval: 0
   }
