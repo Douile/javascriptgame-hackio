@@ -1,1 +1,3 @@
-# canvas-game2.0
+# CANVAS GAME
+
+not ready
