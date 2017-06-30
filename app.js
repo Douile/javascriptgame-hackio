@@ -2,9 +2,10 @@
 app.js https://raw.githubusercontent.com/TheOnly-Tom/canvas-game2.0/master/app.js
 published under GNU General Public License v3.0
 author: Tom Hipwell https://github.com/TheOnly-Tom/
+© Tom Hipwell 2017 all rights reserved
 */
 
-
+// Object types
 function logItem(type,text) { // object for every log item
   this.time = new Date();
   this.time = this.time.toLocaleString();
@@ -13,12 +14,14 @@ function logItem(type,text) { // object for every log item
   return this;
 }
 
+//Main object wrapper
 var app = {
   log: { // object containing logs and log functions
     events: [],
     errors: [],
     info: [],
     verboose: [],
+    logs: [app.logs.verboose, app.logs.info, app.logs.events, app.logs.errors],
     log: function(type, text) { // function to append to the logs
       switch(type) {
         case "event":
@@ -40,9 +43,9 @@ var app = {
         default:
           throw Error("Invalid log type");
       }
-      for (i in [app.log.events,app.log.errors,app.log.info,app.log.verboose]) {
-        while (i.length > 200) {
-          i.pop(i[0]);
+      foreach (i=0;i<app.log.logs.length;i++) { // Checks all logs are less than 1000 objects long
+        while (app.log.logs[i].length > 1000) {
+          app.log.logs[i].pop(app.log.logs[i][0]);
         }
       }
     },
@@ -159,6 +162,7 @@ var app = {
   }
 }
 
+// main code
 app.init(); // calls app init to prepare app
 
 app.runtime.start();
