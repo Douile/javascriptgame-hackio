@@ -90,7 +90,8 @@ var app = {
             return 1;
           }
           i = log[log.length-1];
-          row = i["type"] + " " + i[]"time"] + ": " + i["text"] + "\n";
+          row = i["type"] + " " + i["time"] + ": " + i["text"] + "\n";
+          console.log(row);
       }
   },
   init: function() { // initializes the app object preparing it for run
