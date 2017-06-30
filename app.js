@@ -36,6 +36,22 @@ var protectedStorage = function() {
     }
   }
 }
+// Prototypes
+String.prototype.count = function(char) {
+  count = 0;
+  for (i=0;i<this.length;i++) {
+    if (this[i] == char) {
+      count += 1;
+    }
+  }
+  return count;
+}
+String.prototype.download = function(name) {
+  a = document.createElement("a");
+  a.href = "data:text/plain,"+encodeURIComponent(this.valueOf());
+  a.download = name;
+  a.click();
+}
 
 //Main object wrapper
 var app = {
@@ -265,13 +281,8 @@ var app = {
 
       // Objects, scenes and animations
       app.runtime.objects.push(new app.scenes.scrollingText(["test","test2","test3"],function() {
-        app.runtime.objects.push(new app.scenes.cmd());
+        new app.scenes.cmd();
       }));
-      app.events.keydown.funcs.push(function(e) {
-        if (e.keyCode == 13) {
-          app.runtime.objects.push(new app.scenes.scrollingText(["test","test2","test3"]));
-        }
-      })
   	},
   	pause: function(screen) {
   		if (screen != undefined) {
@@ -327,6 +338,10 @@ var app = {
       return this;
     },
     cmd: function(textArray, onFin) {
+      if (app.scenes.current_cmd != false) {
+        app.log.log("error","Only 1 cmd scene can run at a time");
+        return 1;
+      }
       this.textArray = textArray;
       this.text = "";
       this.bottom = app.vars.enviroment.canvas.height-25;
@@ -351,7 +366,7 @@ var app = {
         app.ctx.font = "20px monospace";
         app.ctx.fillText(this.text,5,this.cursor["top"]+20);
         app.ctx.fillStyle = this.cursor["colors"][this.cursor["state"]];
-        app.ctx.fillRect(this.text.length*10 + 10,this.cursor["top"],10,20);
+        app.ctx.fillRect(this.text.length*10 + 10 + 2*(this.text.count(" ")),this.cursor["top"],10,20);
         if (this.cursor["up"]) { // sets cursor colour
           if (this.cursor["state"] > this.cursor["colors"].length - 2) {
             this.cursor["state"] -= 1;
@@ -369,8 +384,11 @@ var app = {
         }
       }
       app.log.log("scene","cmd scene started");
+      index = app.runtime.objects.push(this);
+      app.scenes.current_cmd = index;
       return this;
-    }
+    },
+    current_cmd: false
   }
 }
 
