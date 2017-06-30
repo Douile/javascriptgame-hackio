@@ -107,7 +107,7 @@ var app = {
             }
           }
         }
-
+        var filtered = 0;
         for (i=0; i<log.length;i++) {
           row = log[i]["type"] + " " + log[i]["time"] + ": " + log[i]["text"] + "\n";
           if (filters.length < 1) {
@@ -115,19 +115,22 @@ var app = {
           }
           for (a=0;a<filters.length;a++) {
             includes = log[i]["text"].includes(filters[a]["text"]);
-            console.log(includes);
             if (filters[a]["inc"] == true) {
               if (includes == true) {
                 logT += row;
+              } else {
+                filtered += 1;
               }
             } else if(filters[a]["inc"] == false) {
               if (includes == false) {
                 logT += row;
+              } else {
+                filtered += 1;
               }
             }
           }
         }
-        info = "\nPRINTED LOG AT " + getTime() + " WITH " + log.length + " ITEMS";
+        info = "\nPRINTED LOG AT " + getTime() + " SHOWING " + (log.length-filtered) + "/" + log.length + " ITEMS";
         logT += info;
         console.log(logT);
       },
@@ -180,8 +183,8 @@ var app = {
     document.head.appendChild(style);
     // events
     app.events.mousemove.event = window.addEventListener("mousemove",app.events.mousemove.handler,{passive:true});
-    app.events.click.event = window.addEventListener("click",app.events.mousemove.handler);
-    app.events.keydown.event = window.addEventListener("keydown",app.events.mousemove.handler);
+    app.events.click.event = window.addEventListener("click",app.events.mousemove.handler,{passive:true});
+    app.events.keydown.event = window.addEventListener("keydown",app.events.mousemove.handler,{passive:true});
     // logs
     app.log.logs = [app.log.verboose, app.log.info, app.log.events, app.log.scenes, app.log.errors]; // sets up the logs to be checked for length
 	  app.log.log("info","App initialized");
@@ -240,13 +243,13 @@ var app = {
   		app.log.log("info","App started");
 
       // Objects, scenes and animations
-      app.runtime.objects.push(new app.scenes.scrollingText(["test","test2","test3"]));
+      app.runtime.objects.push(new app.scenes.scrollingText(["test","test2","test3"],function() {
+        app.runtime.objects.push(new app.scenes.cmd());
+      }));
       app.events.keydown.funcs.push(function(e) {
         console.log(e)
         if (e.keyCode == 13) {
-          app.runtime.objects.push(new app.scenes.scrollingText(["test","test2","test3"],function() {
-            app.runtime.objects.push(new app.scenes.cmd());
-          }));
+          app.runtime.objects.push(new app.scenes.scrollingText(["test","test2","test3"]));
         }
       })
   	},
@@ -282,8 +285,9 @@ var app = {
   },
   scenes: {
     scrollingText: function(textArray, onFin) {
+      this.onFin = onFin;
       this.textArray = textArray;
-      this.base = 20;
+      this.base = app.vars.enviroment.canvas.height;
       this.draw = function() {
         app.ctx.font = "20px monospace";
         app.ctx.fillStyle = "#fff";
@@ -294,8 +298,8 @@ var app = {
         if (this.base < -1*(20*this.textArray.length)-10) {
           app.runtime.objects.pop(this);
           app.log.log("scene","scrollingText scene ended");
-          if (typeof onFin == "function") {
-            onFin();
+          if (typeof this.onFin == "function") {
+            this.onFin();
           }
         }
       }
@@ -309,8 +313,8 @@ var app = {
         colors: ["#000","#111","#222","#333","#444","#555","#666","#777","#888","#999","#aaa","#bbb","#ccc","#ddd","#eee","#fff"],
         state: 0,
         up: true,
-        top: app.vars.enviroment.canvas.height-20,
-        left: 0
+        top: app.vars.enviroment.canvas.height-25,
+        left: 5
       }
       this.draw = function() {
         app.ctx.fillStyle = this.cursor["colors"][this.cursor["state"]];
