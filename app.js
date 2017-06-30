@@ -77,7 +77,8 @@ var app = {
         }
       }
     },
-    print: function(type) { // function to read logs to javascript console
+    print: function(type, filter) { // function to read logs to javascript console
+      var filters = [];
       switch(type) {
         case undefined:
           log = app.log.verboose;
@@ -96,9 +97,35 @@ var app = {
           return 1;
         }
         logT = "";
+        if (filter != undefined && typeof filter == "string") { // reformats the filters into objects
+          filtersTemp = filter.split(";");
+          for (i=0;i<filtersTemp.length;i++) {
+            if (filtersTemp[i].startsWith("!")) {
+              filters.push({inc:false, text: filtersTemp[i].split("!")[1]});
+            } else {
+              filters.push({inc:true, text: filtersTemp[i]});
+            }
+          }
+        }
+
         for (i=0; i<log.length;i++) {
           row = log[i]["type"] + " " + log[i]["time"] + ": " + log[i]["text"] + "\n";
-          logT += row;
+          if (filters.length < 1) {
+            logT += row;
+          }
+          for (a=0;a<filters.length;a++) {
+            includes = log[i]["text"].includes(filters[a]["text"]);
+            console.log(includes);
+            if (filters[a]["inc"] == true) {
+              if (includes == true) {
+                logT += row;
+              }
+            } else if(filters[a]["inc"] == false) {
+              if (includes == false) {
+                logT += row;
+              }
+            }
+          }
         }
         info = "\nPRINTED LOG AT " + getTime() + " WITH " + log.length + " ITEMS";
         logT += info;
@@ -168,17 +195,35 @@ var app = {
     mousemove: {
       handler: function(e) {
         app.log.log("event","mousemove:" + e.x + "," + e.y);
-      }
+        for (i=0;i<app.events.mousemove.funcs.length;i++) {
+          if (typeof app.events.mousemove.funcs[i] == "function") {
+            app.events.mousemove.funcs[i](e);
+          }
+        }
+      },
+      funcs: []
     },
     click: {
       handler: function(e) {
         app.log.log("event","click:" + e.x + "," + e.y);
-      }
+        for (i=0;i<app.events.click.funcs.length;i++) {
+          if (typeof app.events.click.funcs[i] == "function") {
+            app.events.click.funcs[i](e);
+          }
+        }
+      },
+      funcs: []
     },
     keydown: {
       handler: function(e) {
         app.log.log("event","keyDown:" + e.code);
-      }
+        for (i=0;i<app.events.keydown.funcs.length;i++) {
+          if (typeof app.events.keydown.funcs[i] == "function") {
+            app.events.keydown.funcs[i](e);
+          }
+        }
+      },
+      funcs: []
     }
   },
   runtime: { // object containing functions controlling the run of the app
@@ -193,7 +238,15 @@ var app = {
   		app.runtime.interval = setInterval(app.runtime.loop,1000/app.vars.enviroment.fps);
   		app.runtime.state = "running";
   		app.log.log("info","App started");
+
+      // Objects, scenes and animations
       app.runtime.objects.push(new app.scenes.scrollingText(["test","test2","test3"]));
+      app.events.keydown.funcs.push(function(e) {
+        console.log(e)
+        if (e.keyCode == 13) {
+          app.runtime.objects.push(new app.scenes.scrollingText(["test","test2","test3"]));
+        }
+      })
   	},
   	pause: function(screen) {
   		if (screen != undefined) {
@@ -239,7 +292,9 @@ var app = {
         if (this.base < -1*(20*this.textArray.length)-10) {
           app.runtime.objects.pop(this);
           app.log.log("scene","scrollingText scene ended");
-          onFin();
+          if (typeof onFin == "function") {
+            onFin();
+          }
         }
       }
       app.log.log("scene","scrollingText scene started");
@@ -252,3 +307,9 @@ var app = {
 app.init(); // calls app init to prepare app
 
 app.runtime.start();
+
+/*
+HELP
+app.log.print(log type (undefined for verboose), filters: a string containing the filter strings seperated by ; and if non preceded by a !)
+
+*/
