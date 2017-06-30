@@ -90,6 +90,31 @@ var app = {
         app.log.log("event","keyDown:" + e.code);
       }
     }
+  },
+  runtime: { // object containing functions controlling the run of the app
+	start: function() {
+		if (app.runtime.state == "stopped") {
+			// initialize variables
+		}
+		app.runtime.interval = setInterval(app.runtime.loop,1000/60);
+		app.runtime.state = "running";
+	},
+	pause: function(screen) {
+		if (screen != undefined) {
+			screen.draw();
+		}
+		clearInterval(app.runtime.interval);
+		app.runtime.state = "paused";
+	},
+	stop: function(screen) {
+		if (screen != undefined) {
+			screen.draw();
+		}
+		clearInterval(app.runtime.interval);
+		app.runtime.state = "stopped";
+	},
+	state: "stopped",
+	interval: 0
   }
 }
 
