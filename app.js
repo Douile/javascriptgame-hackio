@@ -43,6 +43,7 @@ var app = {
     events: [],
     errors: [],
     info: [],
+    scenes: [],
     verboose: [],
     log: function(type, text) { // function to append to the logs
       switch(type) {
@@ -60,6 +61,11 @@ var app = {
         case "info":
           i = new logItem(type, text);
           app.log.info.push(i);
+          app.log.verboose.push(i);
+          break;
+        case "scene":
+          i = new logItem(type, text);
+          app.log.scenes.push(i);
           app.log.verboose.push(i);
           break;
         default:
@@ -150,7 +156,7 @@ var app = {
     app.events.click.event = window.addEventListener("click",app.events.mousemove.handler);
     app.events.keydown.event = window.addEventListener("keydown",app.events.mousemove.handler);
     // logs
-    app.log.logs = [app.log.verboose, app.log.info, app.log.events, app.log.errors]; // sets up the logs to be checked for length
+    app.log.logs = [app.log.verboose, app.log.info, app.log.events, app.log.scenes, app.log.errors]; // sets up the logs to be checked for length
 	  app.log.log("info","App initialized");
 	  this.init.initialized = true;
     // variables
@@ -176,39 +182,69 @@ var app = {
     }
   },
   runtime: { // object containing functions controlling the run of the app
-	start: function() {
-		if (app.init.initialized != true) {
-			app.log.log("error","App must be initialized before it starts");
-			return 1
-		}
-		if (app.runtime.state == "stopped") {
-			// initialize variables
-		}
-		app.runtime.interval = setInterval(app.runtime.loop,1000/app.vars.enviroment.fps);
-		app.runtime.state = "running";
-		app.log.log("info","App started");
-	},
-	pause: function(screen) {
-		if (screen != undefined) {
-			screen.draw();
-		}
-		clearInterval(app.runtime.interval);
-		app.runtime.state = "paused";
-		app.log.log("info","App paused");
-	},
-	stop: function(screen) {
-		if (screen != undefined) {
-			screen.draw();
-		}
-		clearInterval(app.runtime.interval);
-		app.runtime.state = "stopped";
-		app.log.log("info","App stopped");
-	},
-  loop: function() {
-    // draw canvas + set variables
+    start: function() {
+  		if (app.init.initialized != true) {
+  			app.log.log("error","App must be initialized before it starts");
+  			return 1
+  		}
+  		if (app.runtime.state == "stopped") {
+  			// initialize variables
+  		}
+  		app.runtime.interval = setInterval(app.runtime.loop,1000/app.vars.enviroment.fps);
+  		app.runtime.state = "running";
+  		app.log.log("info","App started");
+      app.runtime.objects.push(new app.scenes.scrollingText(["test","test2","test3"]));
+  	},
+  	pause: function(screen) {
+  		if (screen != undefined) {
+  			screen.draw();
+  		}
+  		clearInterval(app.runtime.interval);
+  		app.runtime.state = "paused";
+  		app.log.log("info","App paused");
+  	},
+  	stop: function(screen) {
+  		if (screen != undefined) {
+  			screen.draw();
+  		}
+  		clearInterval(app.runtime.interval);
+  		app.runtime.state = "stopped";
+  		app.log.log("info","App stopped");
+  	},
+    loop: function() {
+      // clear canvas and draw the background colour
+      app.ctx.clearRect(0,0,app.canvas.width,app.canvas.height);
+      app.ctx.fillStyle = "#000";
+      app.ctx.fillRect(0,0,app.canvas.width,app.canvas.height);
+      // draw canvas + set variables
+      for (i=0;i<app.runtime.objects.length;i++) {
+        app.runtime.objects[i].draw();
+      }
+    },
+  	state: "stopped",
+  	interval: 0,
+    objects: [],
   },
-	state: "stopped",
-	interval: 0
+  scenes: {
+    scrollingText: function(textArray, onFin) {
+      this.textArray = textArray;
+      this.base = 20;
+      this.draw = function() {
+        app.ctx.font = "20px monospace";
+        app.ctx.fillStyle = "#fff";
+        this.base -= 1;
+        for (i=0;i<this.textArray.length;i++) {
+          app.ctx.fillText(this.textArray[i],5,this.base + (20*i));
+        }
+        if (this.base < -1*(20*this.textArray.length)-10) {
+          app.runtime.objects.pop(this);
+          app.log.log("scene","scrollingText scene ended");
+          onFin();
+        }
+      }
+      app.log.log("scene","scrollingText scene started");
+      return this;
+    }
   }
 }
 
