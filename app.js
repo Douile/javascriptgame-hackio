@@ -96,10 +96,25 @@ var app = {
           console.log(row);
       }
   },
+  vars: {
+    enviroment: {
+      canvas: {}
+    },
+    readOnly: {
+
+    }
+  },
   init: function() { // initializes the app object preparing it for run
+    // CONFIG
+    app.vars.enviroment.canvas.width = window.innerWidth;
+    app.vars.enviroment.canvas.height = window.innerHeight;
+    app.vars.enviroment.title = "TESTING";
+    app.vars.enviroment.fps = 60;
     // canvas
     this.canvas = document.createElement("canvas");
     this.canvas.id = "app";
+    this.canvas.height = app.vars.enviroment.canvas.height;
+    this.canvas.width = app.vars.enviroment.canvas.width;
     this.ctx = this.canvas.getContext("2d");
     document.body.appendChild(this.canvas);
     style = document.createElement("style");
@@ -113,6 +128,8 @@ var app = {
     app.log.logs = [app.log.verboose, app.log.info, app.log.events, app.log.errors]; // sets up the logs to be checked for length
 	  app.log.log("info","App initialized");
 	  this.init.initialized = true;
+    // misc
+    document.title = app.vars.enviroment.title;
   },
   events: { // object containing all the event listeners for the app
     mousemove: {
@@ -140,7 +157,7 @@ var app = {
 		if (app.runtime.state == "stopped") {
 			// initialize variables
 		}
-		app.runtime.interval = setInterval(app.runtime.loop,1000/60);
+		app.runtime.interval = setInterval(app.runtime.loop,1000/app.vars.enviroment.fps);
 		app.runtime.state = "running";
 		app.log.log("info","App started");
 	},
