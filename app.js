@@ -21,7 +21,6 @@ var app = {
     errors: [],
     info: [],
     verboose: [],
-    logs: [app.logs.verboose, app.logs.info, app.logs.events, app.logs.errors],
     log: function(type, text) { // function to append to the logs
       switch(type) {
         case "event":
@@ -43,7 +42,7 @@ var app = {
         default:
           throw Error("Invalid log type");
       }
-      foreach (i=0;i<app.log.logs.length;i++) { // Checks all logs are less than 1000 objects long
+      for (i=0;i<app.log.logs.length;i++) { // Checks all logs are less than 1000 objects long
         while (app.log.logs[i].length > 1000) {
           app.log.logs[i].pop(app.log.logs[i][0]);
         }
@@ -98,6 +97,7 @@ var app = {
       }
   },
   init: function() { // initializes the app object preparing it for run
+    // canvas
     this.canvas = document.createElement("canvas");
     this.canvas.id = "app";
     this.ctx = this.canvas.getContext("2d");
@@ -105,11 +105,14 @@ var app = {
     style = document.createElement("style");
     style.innerHTML = "#app {position: absolute;left:0;top:0;width:100%;height:100%;}";
     document.head.appendChild(style);
+    // events
     app.events.mousemove.event = window.addEventListener("mousemove",app.events.mousemove.handler,{passive:true});
     app.events.click.event = window.addEventListener("click",app.events.mousemove.handler);
     app.events.keydown.event = window.addEventListener("keydown",app.events.mousemove.handler);
-	app.log.log("info","App initialized");
-	this.init.initialized = true;
+    // logs
+    app.log.logs = [app.logs.verboose, app.logs.info, app.logs.events, app.logs.errors];
+	  app.log.log("info","App initialized");
+	  this.init.initialized = true;
   },
   events: { // object containing all the event listeners for the app
     mousemove: {
