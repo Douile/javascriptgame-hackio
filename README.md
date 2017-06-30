@@ -12,6 +12,6 @@ _It is currently in early development with most of its custom engine written._
 > _HackIo was developed using [atom text editor](https://atom.io).I recommend you try it_
 
 
-![Atom code](https://github-atom-io-herokuapp-com.global.ssl.fastly.net/assets/screenshot-main-04d5696e786a54803aa385acbc7c9ba3.png)
+[![Atom code](https://github-atom-io-herokuapp-com.global.ssl.fastly.net/assets/screenshot-main-04d5696e786a54803aa385acbc7c9ba3.png)](https://atom.io)
 
 ---
