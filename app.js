@@ -244,7 +244,9 @@ var app = {
       app.events.keydown.funcs.push(function(e) {
         console.log(e)
         if (e.keyCode == 13) {
-          app.runtime.objects.push(new app.scenes.scrollingText(["test","test2","test3"]));
+          app.runtime.objects.push(new app.scenes.scrollingText(["test","test2","test3"],function() {
+            app.runtime.objects.push(new app.scenes.cmd());
+          }));
         }
       })
   	},
@@ -299,6 +301,38 @@ var app = {
       }
       app.log.log("scene","scrollingText scene started");
       return this;
+    },
+    cmd: function(textArray, onFin) {
+      this.textArray = textArray;
+      this.bottom = app.vars.enviroment.canvas.height-25;
+      this.cursor = {
+        colors: ["#000","#111","#222","#333","#444","#555","#666","#777","#888","#999","#aaa","#bbb","#ccc","#ddd","#eee","#fff"],
+        state: 0,
+        up: true,
+        top: app.vars.enviroment.canvas.height-20,
+        left: 0
+      }
+      this.draw = function() {
+        app.ctx.fillStyle = this.cursor["colors"][this.cursor["state"]];
+        app.ctx.fillRect(this.cursor["left"],this.cursor["top"],10,20);
+        if (this.cursor["up"]) { // sets cursor colour
+          if (this.cursor["state"] > this.cursor["colors"].length - 2) {
+            this.cursor["state"] -= 1;
+            this.cursor["up"] = false;
+          } else {
+            this.cursor["state"] += 1;
+          }
+        } else {
+          if (this.cursor["state"] < 1) {
+            this.cursor["state"] += 1;
+            this.cursor["up"] = true;
+          } else {
+            this.cursor["state"] -= 1;
+          }
+        }
+        app.log.log("scene","cmd scene started");
+        return this;
+      }
     }
   }
 }
