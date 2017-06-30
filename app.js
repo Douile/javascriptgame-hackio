@@ -7,6 +7,7 @@ author: Tom Hipwell https://github.com/TheOnly-Tom/
 
 function logItem(type,text) { // object for every log item
   this.time = new Date();
+  this.time = this.time.toLocaleString();
   this.type = type;
   this.text = text;
   return this;
@@ -29,6 +30,7 @@ var app = {
           i = new logItem(type, text);
           app.log.errors.push(i);
           app.log.verboose.push(i);
+		  console.error(i);
           break;
         case "info":
           i = new logItem(type, text);
@@ -47,20 +49,49 @@ var app = {
     print: function(type) { // function to read logs to javascript console
       switch(type) {
         case undefined:
-          console.log(app.log.verboose);
+          log = app.log.verboose;
           break;
-        case "events":
-          console.log(app.log.events);
+        case "event":
+          log = app.log.events;
           break;
         case "error":
-          console.log(app.log.errors);
+          log = app.log.errors;
           break;
         case "info":
-          console.log(app.log.info);
+          log = app.log.info;
+          break;
         default:
           throw Error("Invalid log type");
+          return 1;
+        }
+        logT = "";
+        for (i=0; i<log.length;i++) {
+          row = log[i]["type"] + " " + log[i]["time"] + ": " + log[i]["text"] + "\n";
+          logT += row;
+        }
+        console.log(logT);
+      },
+      last: function(type) {
+        switch(type) {
+          case undefined:
+            log = app.log.verboose;
+            break;
+          case "event":
+            log = app.log.events;
+            break;
+          case "error":
+            log = app.log.errors;
+            break;
+          case "info":
+            log = app.log.info;
+            break;
+          default:
+            throw Error("Invalid log type");
+            return 1;
+          }
+          i = log[log.length-1];
+          row = i["type"] + " " + i[]"time"] + ": " + i["text"] + "\n";
       }
-    }
   },
   init: function() { // initializes the app object preparing it for run
     this.canvas = document.createElement("canvas");
@@ -73,6 +104,8 @@ var app = {
     app.events.mousemove.event = window.addEventListener("mousemove",app.events.mousemove.handler,{passive:true});
     app.events.click.event = window.addEventListener("click",app.events.mousemove.handler);
     app.events.keydown.event = window.addEventListener("keydown",app.events.mousemove.handler);
+	app.log.log("info","App initialized");
+	this.init.initialized = true;
   },
   events: { // object containing all the event listeners for the app
     mousemove: {
@@ -93,11 +126,16 @@ var app = {
   },
   runtime: { // object containing functions controlling the run of the app
 	start: function() {
+		if (app.init.initialized != true) {
+			app.log.log("error","App must be initialized before it starts");
+			return 1
+		}
 		if (app.runtime.state == "stopped") {
 			// initialize variables
 		}
 		app.runtime.interval = setInterval(app.runtime.loop,1000/60);
 		app.runtime.state = "running";
+		app.log.log("info","App started");
 	},
 	pause: function(screen) {
 		if (screen != undefined) {
@@ -105,6 +143,7 @@ var app = {
 		}
 		clearInterval(app.runtime.interval);
 		app.runtime.state = "paused";
+		app.log.log("info","App paused");
 	},
 	stop: function(screen) {
 		if (screen != undefined) {
@@ -112,6 +151,7 @@ var app = {
 		}
 		clearInterval(app.runtime.interval);
 		app.runtime.state = "stopped";
+		app.log.log("info","App stopped");
 	},
 	state: "stopped",
 	interval: 0
@@ -119,3 +159,5 @@ var app = {
 }
 
 app.init(); // calls app init to prepare app
+
+app.runtime.start();
