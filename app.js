@@ -1,5 +1,11 @@
-/* app.js */
-function logItem(type,text) {
+/*
+app.js https://raw.githubusercontent.com/TheOnly-Tom/canvas-game2.0/master/app.js
+published under GNU General Public License v3.0
+author: Tom Hipwell https://github.com/TheOnly-Tom/
+*/
+
+
+function logItem(type,text) { // object for every log item
   this.time = new Date();
   this.type = type;
   this.text = text;
@@ -7,12 +13,12 @@ function logItem(type,text) {
 }
 
 var app = {
-  log: {
+  log: { // object containing logs and log functions
     events: [],
     errors: [],
     info: [],
     verboose: [],
-    log: function(type, text) {
+    log: function(type, text) { // function to append to the logs
       switch(type) {
         case "event":
           i = new logItem(type, text);
@@ -38,7 +44,7 @@ var app = {
         }
       }
     },
-    print: function(type) {
+    print: function(type) { // function to read logs to javascript console
       switch(type) {
         case undefined:
           console.log(app.log.verboose);
@@ -56,7 +62,7 @@ var app = {
       }
     }
   },
-  init: function() {
+  init: function() { // initializes the app object preparing it for run
     this.canvas = document.createElement("canvas");
     this.canvas.id = "app";
     this.ctx = this.canvas.getContext("2d");
@@ -68,7 +74,7 @@ var app = {
     app.events.click.event = window.addEventListener("click",app.events.mousemove.handler);
     app.events.keydown.event = window.addEventListener("keydown",app.events.mousemove.handler);
   },
-  events: {
+  events: { // object containing all the event listeners for the app
     mousemove: {
       handler: function(e) {
         app.log.log("event","mousemove:" + e.x + "," + e.y);
@@ -87,4 +93,4 @@ var app = {
   }
 }
 
-app.init();
+app.init(); // calls app init to prepare app
