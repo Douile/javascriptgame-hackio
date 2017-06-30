@@ -5,13 +5,36 @@ author: Tom Hipwell https://github.com/TheOnly-Tom/
 © Tom Hipwell 2017 all rights reserved
 */
 
+// Functions
+function getTime() {
+  time = new Date();
+  timer = time.getDate() + "/" + time.getMonth() + "/" + time.getFullYear() + " " + time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds() + ":" + time.getMilliseconds();
+  return timer
+}
 // Object types
 function logItem(type,text) { // object for every log item
-  time = new Date();
-  this.time = time.getDate() + "/" + time.getMonth() + "/" + time.getFullYear() + " " + time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds() + ":" + time.getMilliseconds();
+  this.time = getTime();
   this.type = type;
   this.text = text;
   return this;
+}
+var protectedStorage = function() {
+  var text = "";
+  function changeTo(val) {
+    if (val.length == 1 && typeof val == "string") {
+      text = text + val;
+    } else {
+      app.log.log("error","protectedStorage error: invalid store value");
+    }
+  }
+  return {
+    set: function(val) {
+      changeTo(val);
+    },
+    value: function() {
+      return text;
+    }
+  }
 }
 
 //Main object wrapper
@@ -32,7 +55,7 @@ var app = {
           i = new logItem(type, text);
           app.log.errors.push(i);
           app.log.verboose.push(i);
-		  console.error(i);
+		      console.error(i);
           break;
         case "info":
           i = new logItem(type, text);
@@ -71,6 +94,8 @@ var app = {
           row = log[i]["type"] + " " + log[i]["time"] + ": " + log[i]["text"] + "\n";
           logT += row;
         }
+        info = "\nPRINTED LOG AT " + getTime() + " WITH " + log.length + " ITEMS";
+        logT += info;
         console.log(logT);
       },
       last: function(type) {
@@ -100,7 +125,7 @@ var app = {
     enviroment: {
       canvas: {}
     },
-    readOnly: {
+    protected: {
 
     }
   },
@@ -128,6 +153,8 @@ var app = {
     app.log.logs = [app.log.verboose, app.log.info, app.log.events, app.log.errors]; // sets up the logs to be checked for length
 	  app.log.log("info","App initialized");
 	  this.init.initialized = true;
+    // variables
+    app.vars.protected.save = new protectedStorage();
     // misc
     document.title = app.vars.enviroment.title;
   },
