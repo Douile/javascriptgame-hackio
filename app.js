@@ -72,7 +72,7 @@ var app = {
           throw Error("Invalid log type");
       }
       for (i=0;i<app.log.logs.length;i++) { // Checks all logs are less than 1000 objects long
-        while (app.log.logs[i].length > 1000) {
+        while (app.log.logs[i].length > app.vars.enviroment.maxLogSize) {
           app.log.logs[i].pop(app.log.logs[i][0]);
         }
       }
@@ -91,6 +91,9 @@ var app = {
           break;
         case "info":
           log = app.log.info;
+          break;
+        case "scene":
+          log = app.log.scenes;
           break;
         default:
           throw Error("Invalid log type");
@@ -171,6 +174,7 @@ var app = {
     app.vars.enviroment.canvas.height = window.innerHeight;
     app.vars.enviroment.title = "TESTING";
     app.vars.enviroment.fps = 60;
+    app.vars.enviroment.maxLogSize = 2500;
     // canvas
     this.canvas = document.createElement("canvas");
     this.canvas.id = "app";
@@ -183,8 +187,9 @@ var app = {
     document.head.appendChild(style);
     // events
     app.events.mousemove.event = window.addEventListener("mousemove",app.events.mousemove.handler,{passive:true});
-    app.events.click.event = window.addEventListener("click",app.events.mousemove.handler,{passive:true});
-    app.events.keydown.event = window.addEventListener("keydown",app.events.mousemove.handler,{passive:true});
+    app.events.click.event = window.addEventListener("click",app.events.click.handler);
+    app.events.keydown.event = window.addEventListener("keydown",app.events.keydown.handler);
+    app.events.keyup.event = window.addEventListener("keyup",app.events.keyup.handler);
     // logs
     app.log.logs = [app.log.verboose, app.log.info, app.log.events, app.log.scenes, app.log.errors]; // sets up the logs to be checked for length
 	  app.log.log("info","App initialized");
@@ -219,7 +224,9 @@ var app = {
     },
     keydown: {
       handler: function(e) {
-        app.log.log("event","keyDown:" + e.code);
+        app.log.log("event","keydown:" + e.keyCode);
+        e.preventDefault();
+        app.events.keys[e.keyCode] = true;
         for (i=0;i<app.events.keydown.funcs.length;i++) {
           if (typeof app.events.keydown.funcs[i] == "function") {
             app.events.keydown.funcs[i](e);
@@ -227,7 +234,21 @@ var app = {
         }
       },
       funcs: []
-    }
+    },
+    keyup: {
+      handler: function(e) {
+        app.log.log("event","keyup:" + e.keyCode);
+        e.preventDefault();
+        app.events.keys[e.keyCode] = false;
+        for (i=0;i<app.events.keyup.funcs.length;i++) {
+          if (typeof app.events.keyup.funcs[i] == "function") {
+            app.events.keyup.funcs[i](e);
+          }
+        }
+      },
+      funcs: []
+    },
+    keys: {}
   },
   runtime: { // object containing functions controlling the run of the app
     start: function() {
@@ -247,7 +268,6 @@ var app = {
         app.runtime.objects.push(new app.scenes.cmd());
       }));
       app.events.keydown.funcs.push(function(e) {
-        console.log(e)
         if (e.keyCode == 13) {
           app.runtime.objects.push(new app.scenes.scrollingText(["test","test2","test3"]));
         }
@@ -291,7 +311,7 @@ var app = {
       this.draw = function() {
         app.ctx.font = "20px monospace";
         app.ctx.fillStyle = "#fff";
-        this.base -= 1;
+        this.base -= 5;
         for (i=0;i<this.textArray.length;i++) {
           app.ctx.fillText(this.textArray[i],5,this.base + (20*i));
         }
@@ -308,6 +328,7 @@ var app = {
     },
     cmd: function(textArray, onFin) {
       this.textArray = textArray;
+      this.text = "";
       this.bottom = app.vars.enviroment.canvas.height-25;
       this.cursor = {
         colors: ["#000","#111","#222","#333","#444","#555","#666","#777","#888","#999","#aaa","#bbb","#ccc","#ddd","#eee","#fff"],
@@ -316,9 +337,21 @@ var app = {
         top: app.vars.enviroment.canvas.height-25,
         left: 5
       }
+      this.handler = function(e) {
+        if ((e.keyCode > 47 && e.keyCode < 91) || e.keyCode == 32) {
+          app.runtime.objects[0].text += String.fromCharCode(e.keyCode);
+        } else if (e.keyCode == 8) {
+          app.runtime.objects[0].text = app.runtime.objects[0].text.trimRight(1);
+        }
+        console.log(app.runtime.objects[0].text,e.keyCode,String.fromCharCode(e.keyCode));
+      }
+      app.events.keydown.funcs.push(this.handler);
       this.draw = function() {
+        app.ctx.fillStyle = "#fff";
+        app.ctx.font = "20px monospace";
+        app.ctx.fillText(this.text,5,this.cursor["top"]+20);
         app.ctx.fillStyle = this.cursor["colors"][this.cursor["state"]];
-        app.ctx.fillRect(this.cursor["left"],this.cursor["top"],10,20);
+        app.ctx.fillRect(this.text.length*10 + 10,this.cursor["top"],10,20);
         if (this.cursor["up"]) { // sets cursor colour
           if (this.cursor["state"] > this.cursor["colors"].length - 2) {
             this.cursor["state"] -= 1;
@@ -334,9 +367,9 @@ var app = {
             this.cursor["state"] -= 1;
           }
         }
-        app.log.log("scene","cmd scene started");
-        return this;
       }
+      app.log.log("scene","cmd scene started");
+      return this;
     }
   }
 }
