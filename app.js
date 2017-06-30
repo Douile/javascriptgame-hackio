@@ -52,6 +52,14 @@ String.prototype.download = function(name) {
   a.download = name;
   a.click();
 }
+String.prototype.backspace = function() {
+  temp = this.valueOf();
+  text = "";
+  for (i=0;i<temp.length-1;i++) {
+    text += temp[i];
+  }
+  return text;
+}
 
 //Main object wrapper
 var app = {
@@ -323,7 +331,7 @@ var app = {
       this.textArray = textArray;
       this.base = app.vars.enviroment.canvas.height;
       this.draw = function() {
-        app.ctx.font = "20px monospace";
+        app.ctx.font = "20px consolas";
         app.ctx.fillStyle = "#fff";
         this.base -= 5;
         for (i=0;i<this.textArray.length;i++) {
@@ -357,19 +365,26 @@ var app = {
       }
       this.handler = function(e) {
         if ((e.keyCode > 47 && e.keyCode < 91) || e.keyCode == 32) {
-          app.runtime.objects[0].text += String.fromCharCode(e.keyCode);
+          char = String.fromCharCode(e.keyCode)
+          if (app.events.keys[16] != true && app.events.keys[20] != true) {
+            char = char.toLowerCase();
+          }
+          app.runtime.objects[app.scenes.current_cmd].text += char;
         } else if (e.keyCode == 8) {
-          app.runtime.objects[0].text = app.runtime.objects[0].text.trimRight(1);
+          app.runtime.objects[app.scenes.current_cmd].text = app.runtime.objects[app.scenes.current_cmd].text.backspace();
+          console.log(app.runtime.objects[app.scenes.current_cmd]);
+        } else if (e.keyCode == 13) {
+          app.runtime.objects[app.scenes.current_cmd].text = "";
         }
         console.log(app.runtime.objects[0].text,e.keyCode,String.fromCharCode(e.keyCode));
       }
       app.events.keydown.funcs.push(this.handler);
       this.draw = function() {
         app.ctx.fillStyle = "#fff";
-        app.ctx.font = "20px monospace";
+        app.ctx.font = "20px consolas";
         app.ctx.fillText(this.text,5,this.cursor["top"]+20);
         app.ctx.fillStyle = this.cursor["colors"][this.cursor["state"]];
-        app.ctx.fillRect(this.text.length*10 + 10 + 2*(this.text.count(" ")),this.cursor["top"],10,20);
+        app.ctx.fillRect(this.text.length*11 + 11,this.cursor["top"],10,20);
         if (this.cursor["up"]) { // sets cursor colour
           if (this.cursor["state"] > this.cursor["colors"].length - 2) {
             this.cursor["state"] -= 1;
@@ -387,7 +402,7 @@ var app = {
         }
       }
       app.log.log("scene","cmd scene started");
-      index = app.runtime.objects.push(this);
+      index = app.runtime.objects.push(this)-1;
       app.scenes.current_cmd = index;
       return this;
     },
@@ -402,6 +417,6 @@ app.runtime.start();
 
 /*
 HELP
-app.log.print(log type (undefined for verboose), filters: a string containing the filter strings seperated by ; and if non preceded by a !)
+app.log.print(log type (undefined for verboose), filters: a string containing the filter strings seperated by ; and if non preceded by a !, true to download the log)
 
 */
