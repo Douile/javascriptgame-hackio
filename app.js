@@ -93,7 +93,7 @@ var app = {
         }
       }
     },
-    print: function(type, filter) { // function to read logs to javascript console
+    print: function(type, filter, download) { // function to read logs to javascript console
       var filters = [];
       switch(type) {
         case undefined:
@@ -128,7 +128,7 @@ var app = {
         }
         var filtered = 0;
         for (i=0; i<log.length;i++) {
-          row = log[i]["type"] + " " + log[i]["time"] + ": " + log[i]["text"] + "\n";
+          row = log[i]["type"] + " " + log[i]["time"] + ": " + log[i]["text"] + "\r\n";
           if (filters.length < 1) {
             logT += row;
           }
@@ -152,6 +152,9 @@ var app = {
         info = "\nPRINTED LOG AT " + getTime() + " SHOWING " + (log.length-filtered) + "/" + log.length + " ITEMS";
         logT += info;
         console.log(logT);
+        if (download == true) {
+          logT.download("app."+type+".log");
+        }
       },
       last: function(type) {
         switch(type) {
