@@ -1,5 +1,5 @@
 # How to set up a local server version
-1) [Download package](https://github.com/TheOnly-Tom/javascriptgame-hackio/archive/1.1.1.zip) and extract
+1) [Download package](https://github.com/TheOnly-Tom/javascriptgame-hackio/archive/1.1.2.zip) and extract
 2) Open server.py I recommend navigating to the directory in terminal/cmd and running ` py server.py`
 3) The script will print out the hostname of your local server e.g. `Server starting on host: HOSTNAME`
 4) Navigate to the hostname in your browser
