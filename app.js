@@ -221,6 +221,7 @@ var app = {
     app.events.click.event = window.addEventListener("click",app.events.click.handler);
     app.events.keydown.event = window.addEventListener("keydown",app.events.keydown.handler);
     app.events.keyup.event = window.addEventListener("keyup",app.events.keyup.handler);
+    app.events.resize.event = window.addEventListener("resize",app.events.resize.handler);
     // logs
     app.log.logs = [app.log.verboose, app.log.info, app.log.events, app.log.scenes, app.log.errors]; // sets up the logs to be checked for length
 	  app.log.log("info","App initialized");
@@ -256,6 +257,9 @@ var app = {
     keydown: {
       handler: function(e) {
         app.log.log("event","keydown:" + e.keyCode);
+        if (e.keyCode == 116) {
+          location.reload();
+        }
         e.preventDefault();
         app.events.keys[e.keyCode] = true;
         for (i=0;i<app.events.keydown.funcs.length;i++) {
@@ -279,7 +283,22 @@ var app = {
       },
       funcs: []
     },
-    keys: {}
+    keys: {},
+    resize: {
+      handler: function(e) {
+        app.log.log("event","resize");
+        app.vars.enviroment.canvas.width = window.innerWidth;
+        app.vars.enviroment.canvas.height = window.innerHeight;
+        app.canvas.width = app.vars.enviroment.canvas.width;
+        app.canvas.height = app.vars.enviroment.canvas.height;
+        for (i=0;i<app.events.resize.funcs.length;i++) {
+          if (typeof app.events.resize.funcs[i] == "function") {
+            app.events.resize.funcs[i](e);
+          }
+        }
+      },
+      funcs: []
+    }
   },
   runtime: { // object containing functions controlling the run of the app
     start: function() {
@@ -387,7 +406,7 @@ var app = {
         left: 5
       }
       this.failedCommands = 0;
-      this.handler = function(e) {
+      this.keyHandler = function(e) {
         if (app.runtime.objects[app.scenes.current_cmd].typeText != true) {
           if ((e.keyCode > 47 && e.keyCode < 91) || e.keyCode == 32) {
             char = String.fromCharCode(e.keyCode)
@@ -405,26 +424,37 @@ var app = {
         }
       }
       this.commandHandler = function() {
-        switch(this.text.toLowerCase()) {
+        temp = this.text.toLowerCase().split(" ");
+        command = temp[0];
+        args = [];
+        for (i=1;i<temp.length;i++) {
+          args.push(temp[i]);
+        }
+        switch(command) {
           case "cls":
             this.textArray = ["Screen cleared."];
             this.failedCommands = 0;
             break;
           case "help":
-            this.textArray.push("","HELP:","mission - prints current mission","cls - clears screen","");
+            this.textArray.push("","HELP:","mission - prints current mission","cls - clears screen","ls - prints current directory","cd - move directory","");
             this.failedCommands = 0;
             break;
+          case "":
+            break;
           default:
-            this.textArray.push("Error command not found: " + this.text);
+            this.textArray.push("Error command not found: " + command);
             this.failedCommands += 1;
             break;
         }
-        if (this.failedCommands >= 5) {
-          this.textArray.push("5 errors in a row try help");
+        if (this.failedCommands >= 5 && this.text != "") {
+          this.textArray.push(this.failedCommands + " errors in a row try help");
         }
         this.text = "";
       }
-      app.events.keydown.funcs.push(this.handler);
+      app.events.keydown.funcs.push(this.keyHandler);
+      app.events.resize.funcs.push(function(e) {
+        app.runtime.objects[app.scenes.current_cmd].cursor["top"] = app.vars.enviroment.canvas.height-25;
+      })
       this.draw = function() {
         if (this.typeText == true) {
           if (getCodeTime()-this.lastTime > (Math.floor(Math.random()*5))*1000) {
@@ -447,7 +477,7 @@ var app = {
           app.ctx.font = "20px consolas";
           app.ctx.fillText(this.text,5,this.cursor["top"]+20);
           app.ctx.fillStyle = this.cursor["colors"][this.cursor["state"]];
-          app.ctx.fillRect(this.text.length*11 + 11,this.cursor["top"],10,20);
+          app.ctx.fillRect(this.text.length*11 + 5,this.cursor["top"],10,20);
           if (this.cursor["up"]) { // sets cursor colour
             if (this.cursor["state"] > this.cursor["colors"].length - 2) {
               this.cursor["state"] -= 1;
