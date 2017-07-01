@@ -268,8 +268,7 @@ var app = {
               }
               break;
             case "login":
-              if (parseInt(args[0]) < this.vars.users.length-1) {
-                console.log(args,this.vars.users[parseInt(args[0])])
+              if (parseInt(args[0]) < this.vars.users.length) {
                 if (this.vars.users[parseInt(args[0])]["role"] == "Manager" && this.vars.users[parseInt(args[0])]["pass"] == args[1]) {
                   this.end();
                 } else if (this.vars.users[parseInt(args[0])]["pass"] == args[1]) {
@@ -291,7 +290,7 @@ var app = {
             this.textArray.push(this.failedCommands + " errors in a row try help");
           }
         },
-        start: ["Selecting user..."," "," ",
+        start: ["Welcome.","To pass the test login to the manager's account."," ","Loading remote access...","Selecting user..."," "," ",
         "User guest selected"," ",
         "Setting guest enviroment variables...",
         "Updating event registry...",
@@ -326,7 +325,7 @@ var app = {
         cmds: function(command, args) {
 
         },
-        start: ["well done!"," ","You have potential...","..."," "],
+        start: ["Well done.","You have potential..."," ","This one is harder..."," "," ","Find me the password hashes"," ","BOOTING OS/8.5 . . ."],
         vars: {
           setup: function() {
 
