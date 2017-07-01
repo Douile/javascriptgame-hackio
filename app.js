@@ -199,14 +199,12 @@ var app = {
         cmds: function(command, args) {
           switch(command) {
             case "help":
-              this.textArray.push("","HELP:","cls - clears screen","sql {command} - runs a sql command","hint - prints a hint","login {id} {password} - login to an account","exit",
+              this.textArray.push("","HELP:","cls - clears screen","sql {command} - runs a sql command","login {id} {password} - login to an account","exit",
               "--- I_n_j_e_c_t_e_d___s_c_r_i_p_t___h_a_c_k_:",
-              "HACK OBJECTIVE - current objective e_n_d---",
+              "HACK OBJECTIVE - current objective",
+              "HACK HINT - print a hint e_n_d---",
               "");
               this.failedCommands = 0;
-              break;
-            case "hint":
-              "try typing sql SELECT * FROM users\r\njeez".download("hint.txt");
               break;
             case "sql":
               if (args.length < 1) {
@@ -219,7 +217,7 @@ var app = {
                 if (args[1] == "*") {
                   if (args[2] == "from") {
                     if (args[3] == "users") {
-                      users = ["users table:","NAME      ROLE      ID    PASS"];
+                      users = ["users table:","NAME      ROLE           ID    PASS"];
                       for (i=0;i<this.vars.users.length;i++) {
                         str = "";
                         str += this.vars.users[i]["name"];
@@ -227,7 +225,7 @@ var app = {
                           str += " ";
                         }
                         str += this.vars.users[i]["role"];
-                        for (a=0;a<10-this.vars.users[i]["role"].length;a++) {
+                        for (a=0;a<15-this.vars.users[i]["role"].length;a++) {
                           str += " ";
                         }
                         str += this.vars.users[i]["id"];
@@ -237,7 +235,7 @@ var app = {
                         str += this.vars.users[i]["pass"];
                         users.push(str);
                       }
-                      console.log(users);
+                      users.push("");
                       for (i=0;i<users.length;i++) {
                         this.textArray.push(users[i]);
                       }
@@ -257,13 +255,24 @@ var app = {
             case "hack":
               if (args[0] == "objective") {
                 this.textArray.push("Current objective: login to the managers account // commands required: login, sql","");
+              } else if (args[0] == "hint") {
+                "try typing sql SELECT * FROM users\r\njeez".download("hint.txt");
               } else {
                 this.textArray.push("HACK script has been injected successfully.");
               }
               break;
             case "login":
-              if (args[0] == "5" && args[1] == "test") {
-                this.end();
+              if (parseInt(args[0]) < this.vars.users.length-1) {
+                console.log(args,this.vars.users[parseInt(args[0])])
+                if (this.vars.users[parseInt(args[0])]["role"] == "Manager" && this.vars.users[parseInt(args[0])]["pass"] == args[1]) {
+                  this.end();
+                } else if (this.vars.users[parseInt(args[0])]["pass"] == args[1]) {
+                  this.textArray.push("___H_A_C_K___I_N_J_E_C_T_E_D___S_C_R_I_P_T___S_A_Y_S___M_U_S_T___L_O_G_I_N___A_S___M_A_N_A_G_E_R___","");
+                } else {
+                  this.textArray.push("Invalid password","");
+                }
+              } else {
+                this.textArray.push("Invalid ID","");
               }
             case "":
               break;
@@ -296,7 +305,7 @@ var app = {
               name = app.vars.levels.ag.vars.userNames[Math.floor(Math.random()*app.vars.levels.ag.vars.userNames.length)];
               pass = "";
               for (a=0;a<3;a++) {
-                pass += app.vars.levels.ag.vars.userPass[Math.floor(Math.random()*app.vars.levels.ag.vars.userPass.length)];
+                pass += app.vars.levels.ag.vars.userPass[Math.floor(Math.random()*app.vars.levels.ag.vars.userPass.length)].toLowerCase();
               }
               role = app.vars.levels.ag.vars.userRoles[Math.floor(Math.random()*app.vars.levels.ag.vars.userRoles.length)];
               id = i.toString();
@@ -311,7 +320,12 @@ var app = {
         cmds: function(command, args) {
 
         },
-        start: ["well done!"]
+        start: ["well done!"," ","You have potential...","..."," "],
+        vars: {
+          setup: function() {
+
+          }
+        }
       }
     }
   },
