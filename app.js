@@ -390,6 +390,14 @@ var app = {
       viewport.setAttribute("content","initial-scale=1,maximum-scale=1,width=device-width,height=device-height");
       document.head.appendChild(viewport);
     }
+    icons = ["icon","shortcut icon","favicon"];
+    for (i=0;i<icons.length;i++) {
+      icon = document.createElement("link");
+      icon.setAttribute("rel",icons[i]);
+      icon.setAttribute("type","image/png");
+      icon.setAttribute("href","/favicon.png");
+      document.head.appendChild(icon);
+    }
     document.title = app.vars.enviroment.title;
   },
   events: { // object containing all the event listeners for the app

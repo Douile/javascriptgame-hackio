@@ -92,9 +92,9 @@ class server():
             mime = "text/javascript"
         elif page == "/home.html":
             rp, code = readFile("home.html")
-        elif page == "/favicon.ico":
-            mime = "image/x-icon"
-            rp, code = readImage("favicon.ico")
+        elif page == "/favicon.png":
+            mime = "image/png"
+            rp, code = readImage("favicon.png")
         else:
             rp, code = nofile()
         if type(rp) == str:
