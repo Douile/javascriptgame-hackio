@@ -223,15 +223,19 @@ var app = {
                 if (args[1] == "*") {
                   if (args[2] == "from") {
                     if (args[3] == "users") {
-                      this.textArray.push("print table data");
+                      this.textArray.push("NAME    ID      PASSWORD","",
+                      "david   1       catHater68",
+                      "");
                     } else if (args[3] == "payments" || args[3] == "employees") {
                       this.textArray.push("Access denied...","");
                     } else {
                       this.textArray.push("Unknown table","");
                     }
+                  } else {
+                    this.textArray.push("Error: invalid sql command","");
                   }
                 } else {
-                  this.textArray.push("Error table not specified","");
+                  this.textArray.push("Error: invalid sql command","");
                 }
               }
               break;
