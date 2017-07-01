@@ -142,24 +142,29 @@ var app = {
         var filtered = 0;
         for (i=0; i<log.length;i++) {
           row = log[i]["type"] + " " + log[i]["time"] + ": " + log[i]["text"] + "\r\n";
+          show = true;
           if (filters.length < 1) {
-            logT += row;
+            show = true;
           }
           for (a=0;a<filters.length;a++) {
             includes = log[i]["text"].includes(filters[a]["text"]);
             if (filters[a]["inc"] == true) {
               if (includes == true) {
-                logT += row;
+                show = true;
               } else {
                 filtered += 1;
               }
             } else if(filters[a]["inc"] == false) {
               if (includes == false) {
-                logT += row;
+
               } else {
                 filtered += 1;
+                show = false;
               }
             }
+          }
+          if (show == true) {
+            logT += row;
           }
         }
         info = "\nPRINTED LOG AT " + getTime() + " SHOWING " + (log.length-filtered) + "/" + log.length + " ITEMS";
@@ -636,7 +641,7 @@ var app = {
             app.runtime.objects[app.scenes.current_cmd].text = app.runtime.objects[app.scenes.current_cmd].text.backspace();
           } else if (e.keyCode == 13) {
             app.runtime.objects[app.scenes.current_cmd].commandHandler();
-          } 
+          }
         }
       }
       this.resizeHandler = function(e) {
@@ -657,6 +662,7 @@ var app = {
         } else {
           this.commandHandlerEx(command,args);
         }
+        this.text = "";
       }
       this.commandHandlerEx = app.vars.levels[this.level]["cmds"];
       app.events.keydown.funcs.push(this.keyHandler);
