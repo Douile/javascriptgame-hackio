@@ -54,71 +54,7 @@ class server():
         self.sock.bind((self.ip,80))
         self.sock.listen(1024)
         self.threads = []
-    def write(self, name, p,
-              players=bytes([0x00,0x01,0x01,0x00,0x02,0x01]),
-              level=1,
-              upgrades=bytes([0x00])):
-        uid = len(self.read())
-        self.sql = sqlite3.connect("data.db")
-        self.sql.execute("INSERT INTO users VALUES (?,?,?,?,?,?)",[uid,name,sqlite3.Binary(players),level,upgrades,p])
-        self.sql.commit()
-        self.sql.close()
-        log("Wrote user {0} to the database".format(uid))
-        return uid
-    def read(self, f="*", w=""):
-        if f == None:
-            f = "*"
-        if w != "":
-            w = "WHERE " + w
-        self.sql = sqlite3.connect("data.db")
-        s = self.sql.execute("SELECT " + f + " FROM users" + w)
-        r = s.fetchall()
-        self.sql.close()
-        return r
-    def update(self,toUpdate, value, id):
-         self.sql = sqlite3.connect("data.db")
-         self.sql.execute("UPDATE users SET " + toUpdate + "=" + value + " WHERE id="+id)
-         self.sql.commit()
-         self.sql.close()
-    def delall(self):
-        c = ""
-        self.sql = sqlite3.connect("data.db")
-        while c.lower() != "yes":
-            c = input("Are you sure you want to delete entire table? (yes/no/drop)")
-            if c.lower() == "no":
-                return False
-            if c.lower() == "drop":
-                 return self.configure()
-        self.sql.execute("DELETE FROM users")
-        self.sql.commit()
-        self.sql.close()
-        log("Successfully deleted all rows from users table")
-        return True
-    def configure(self):
-         try:
-              self.sql = sqlite3.connect("data.db")
-              self.sql.execute("DROP TABLE USERS")
-              self.sql.execute("""CREATE TABLE users (
-                                   id INTEGER PRIMARY KEY,
-                                   name TEXT,
-                                   players BLOB,
-                                   level INTEGER,
-                                   upgrades BLOB,
-                                   pass VARCHAR(4));""")
-              self.sql.commit()
-              self.sql.close()
-              log("Successfully reconfigured database")
-         except sqlite3.OperationalError as e:
-              error = "SQL Error: "
-              for i in e.args:
-                   error += i + ","
-              print(error)
-              log("Failed to reconfigure database")
-              return False
-         print(self.read())
-         return True
     def start(self):
-        #print(self.read())
         log("Started")
         try:
             self.loop()
@@ -171,7 +107,6 @@ class server():
         else:
             print("Invalid type of response page")
         s.close()
-        #print(data)
 threading.Thread(target=console).start()
 s = server()
 s.start()
