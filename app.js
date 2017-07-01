@@ -25,11 +25,7 @@ function logItem(type,text) { // object for every log item
 var protectedStorage = function() {
   var text = "";
   function changeTo(val) {
-    if (val.length == 1 && typeof val == "string") {
-      text = text + val;
-    } else {
-      app.log.log("error","protectedStorage error: invalid store value");
-    }
+    text = text + val[0];
   }
   return {
     set: function(val) {
@@ -223,9 +219,28 @@ var app = {
                 if (args[1] == "*") {
                   if (args[2] == "from") {
                     if (args[3] == "users") {
-                      this.textArray.push("NAME    ID      PASSWORD","",
-                      "david   1       catHater68",
-                      "");
+                      users = ["users table:","NAME      ROLE      ID    PASS"];
+                      for (i=0;i<this.vars.users.length;i++) {
+                        str = "";
+                        str += this.vars.users[i]["name"];
+                        for (a=0;a<10-this.vars.users[i]["name"].length;a++) {
+                          str += " ";
+                        }
+                        str += this.vars.users[i]["role"];
+                        for (a=0;a<10-this.vars.users[i]["role"].length;a++) {
+                          str += " ";
+                        }
+                        str += this.vars.users[i]["id"];
+                        for (a=0;a<6-this.vars.users[i]["id"].length;a++) {
+                          str += " ";
+                        }
+                        str += this.vars.users[i]["pass"];
+                        users.push(str);
+                      }
+                      console.log(users);
+                      for (i=0;i<users.length;i++) {
+                        this.textArray.push(users[i]);
+                      }
                     } else if (args[3] == "payments" || args[3] == "employees") {
                       this.textArray.push("Access denied...","");
                     } else {
@@ -246,6 +261,10 @@ var app = {
                 this.textArray.push("HACK script has been injected successfully.");
               }
               break;
+            case "login":
+              if (args[0] == "5" && args[1] == "test") {
+                this.end();
+              }
             case "":
               break;
             default:
@@ -266,7 +285,33 @@ var app = {
         "Connecting to data server...",
         "Data DBA accessed...",
         " "],
-        next: "l"
+        next: "ld",
+        vars: {
+          userNames: ["John","Mel","Andrew","David","Alice","Betty","Steve","Bob","Sam","Sammy","Tom","Nick","Olivia","Rose","Sally"],
+          userPass: ["Cat","Dog","Lover","Hater","Horse","Car","Bot","0","5","7","6","9","10"],
+          userRoles: ["Customer","Assistant","Floor","Floor Manager"],
+          setup: function() {
+            this.vars.users = [];
+            for (i=0;i<Math.floor(Math.random()*5)+10;i++) {
+              name = app.vars.levels.ag.vars.userNames[Math.floor(Math.random()*app.vars.levels.ag.vars.userNames.length)];
+              pass = "";
+              for (a=0;a<3;a++) {
+                pass += app.vars.levels.ag.vars.userPass[Math.floor(Math.random()*app.vars.levels.ag.vars.userPass.length)];
+              }
+              role = app.vars.levels.ag.vars.userRoles[Math.floor(Math.random()*app.vars.levels.ag.vars.userRoles.length)];
+              id = i.toString();
+              this.vars.users.push({id:id,name:name,pass:pass,role:role});
+            }
+            i = Math.floor(Math.random()*this.vars.users.length);
+            this.vars.users[i]["role"] = "Manager";
+          }
+        }
+      },
+      agl: {
+        cmds: function(command, args) {
+
+        },
+        start: ["well done!"]
       }
     }
   },
@@ -467,6 +512,9 @@ var app = {
         left: 5
       }
       this.failedCommands = 0;
+      this.vars = {};
+      this.varsetup = app.vars.levels[this.level]["vars"]["setup"];
+      this.varsetup();
       this.keyHandler = function(e) {
         if (app.runtime.objects[app.scenes.current_cmd].typeText != true) {
           if ((e.keyCode > 47 && e.keyCode < 91) || e.keyCode == 32) {
@@ -592,10 +640,11 @@ var app = {
       index = app.runtime.objects.push(this)-1;
       app.scenes.current_cmd = index;
       this.end = function() {
+        app.log.log("scene","cmd scene ended");
         app.runtime.objects.pop(this);
         app.events.keydown.funcs.pop(this.keyHandler);
         app.events.resize.funcs.pop(this.resizeHandler);
-        app.vars.protected.save.set(app.vars.levels[this.level]["l"]);
+        app.vars.protected.save.set(app.vars.levels[this.level]["next"]);
         new app.scenes.cmd();
       }
       return this;
