@@ -11,6 +11,10 @@ function getTime() {
   timer = time.getDate() + "/" + time.getMonth() + "/" + time.getFullYear() + " " + time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds() + ":" + time.getMilliseconds();
   return timer
 }
+function getCodeTime() {
+  time = new Date();
+  return time.getTime();
+}
 // Object types
 function logItem(type,text) { // object for every log item
   this.time = getTime();
@@ -292,7 +296,7 @@ var app = {
 
       // Objects, scenes and animations
       app.runtime.objects.push(new app.scenes.scrollingText(["test","test2","test3"],function() {
-        new app.scenes.cmd();
+        new app.scenes.cmd(["test","test2","test3","test4"],true);
       }));
   	},
   	pause: function(screen) {
@@ -348,12 +352,25 @@ var app = {
       app.log.log("scene","scrollingText scene started");
       return this;
     },
-    cmd: function(textArray, onFin) {
+    cmd: function(textArray, typeText, onFin) {
       if (app.scenes.current_cmd != false) {
         app.log.log("error","Only 1 cmd scene can run at a time");
         return 1;
       }
-      this.textArray = textArray;
+      if (typeText != true) {
+        this.textArray = textArray;
+        this.typeText = false;
+      } else {
+        this.typeText = true;
+        this.textToType = textArray;
+        this.textArray = [];
+        this.lastTime = getCodeTime();
+        this.map = [];
+        for (i=0;i<this.textToType.length;i++) {
+          this.map.push(this.textToType[i].length-1);
+        }
+        this.cur = {ar: 0, st: 0};
+      }
       this.text = "";
       this.bottom = app.vars.enviroment.canvas.height-25;
       this.cursor = {
@@ -364,41 +381,66 @@ var app = {
         left: 5
       }
       this.handler = function(e) {
-        if ((e.keyCode > 47 && e.keyCode < 91) || e.keyCode == 32) {
-          char = String.fromCharCode(e.keyCode)
-          if (app.events.keys[16] != true && app.events.keys[20] != true) {
-            char = char.toLowerCase();
+        if (app.runtime.objects[app.scenes.current_cmd] != true) {
+          if ((e.keyCode > 47 && e.keyCode < 91) || e.keyCode == 32) {
+            char = String.fromCharCode(e.keyCode)
+            if (app.events.keys[16] != true && app.events.keys[20] != true) {
+              char = char.toLowerCase();
+            }
+            app.runtime.objects[app.scenes.current_cmd].text += char;
+          } else if (e.keyCode == 8) {
+            app.runtime.objects[app.scenes.current_cmd].text = app.runtime.objects[app.scenes.current_cmd].text.backspace();
+            console.log(app.runtime.objects[app.scenes.current_cmd]);
+          } else if (e.keyCode == 13) {
+            app.runtime.objects[app.scenes.current_cmd].text = "";
           }
-          app.runtime.objects[app.scenes.current_cmd].text += char;
-        } else if (e.keyCode == 8) {
-          app.runtime.objects[app.scenes.current_cmd].text = app.runtime.objects[app.scenes.current_cmd].text.backspace();
-          console.log(app.runtime.objects[app.scenes.current_cmd]);
-        } else if (e.keyCode == 13) {
-          app.runtime.objects[app.scenes.current_cmd].text = "";
+          console.log(app.runtime.objects[0].text,e.keyCode,String.fromCharCode(e.keyCode));
         }
-        console.log(app.runtime.objects[0].text,e.keyCode,String.fromCharCode(e.keyCode));
       }
       app.events.keydown.funcs.push(this.handler);
       this.draw = function() {
-        app.ctx.fillStyle = "#fff";
-        app.ctx.font = "20px consolas";
-        app.ctx.fillText(this.text,5,this.cursor["top"]+20);
-        app.ctx.fillStyle = this.cursor["colors"][this.cursor["state"]];
-        app.ctx.fillRect(this.text.length*11 + 11,this.cursor["top"],10,20);
-        if (this.cursor["up"]) { // sets cursor colour
-          if (this.cursor["state"] > this.cursor["colors"].length - 2) {
-            this.cursor["state"] -= 1;
-            this.cursor["up"] = false;
-          } else {
-            this.cursor["state"] += 1;
+        if (this.typeText == true) {
+          if (getCodeTime()-this.lastTime > (Math.floor(Math.random()*5))*1000) {
+            this.lastTime = getCodeTime();
+            if (this.textArray[this.cur["ar"]] == undefined) {
+              this.textArray[this.cur["ar"]] = "";
+            }
+            this.textArray[this.cur["ar"]] += this.textToType[this.cur["ar"]][this.cur["st"]];
+            this.cur["st"] += 1;
+            if (this.cur["st"] > this.map[this.cur["ar"]]) {
+              this.cur["ar"] += 1;
+              this.cur["st"] = 0;
+              if (this.cur["ar"] > this.map.length-1) {
+                this.typeText = false;
+              }
+            }
           }
         } else {
-          if (this.cursor["state"] < 1) {
-            this.cursor["state"] += 1;
-            this.cursor["up"] = true;
+          app.ctx.fillStyle = "#fff";
+          app.ctx.font = "20px consolas";
+          app.ctx.fillText(this.text,5,this.cursor["top"]+20);
+          app.ctx.fillStyle = this.cursor["colors"][this.cursor["state"]];
+          app.ctx.fillRect(this.text.length*11 + 11,this.cursor["top"],10,20);
+          if (this.cursor["up"]) { // sets cursor colour
+            if (this.cursor["state"] > this.cursor["colors"].length - 2) {
+              this.cursor["state"] -= 1;
+              this.cursor["up"] = false;
+            } else {
+              this.cursor["state"] += 1;
+            }
           } else {
-            this.cursor["state"] -= 1;
+            if (this.cursor["state"] < 1) {
+              this.cursor["state"] += 1;
+              this.cursor["up"] = true;
+            } else {
+              this.cursor["state"] -= 1;
+            }
           }
+        }
+        app.ctx.fillStyle = "#fff";
+        for (i=0;i<this.textArray.length;i++) {
+          a = this.textArray.length-i-1;
+          app.ctx.fillText(this.textArray[i],5,this.cursor["top"]-(a*20));
         }
       }
       app.log.log("scene","cmd scene started");
