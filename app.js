@@ -203,7 +203,10 @@ var app = {
         cmds: function(command, args) {
           switch(command) {
             case "help":
-              this.textArray.push("","HELP:","cls - clears screen","sql {command} - runs a sql command","hint - prints a hint","login {id} {password} - login to an account","exit","");
+              this.textArray.push("","HELP:","cls - clears screen","sql {command} - runs a sql command","hint - prints a hint","login {id} {password} - login to an account","exit",
+              "--- I_n_j_e_c_t_e_d___s_c_r_i_p_t___h_a_c_k_:",
+              "HACK OBJECTIVE - current objective e_n_d---",
+              "");
               this.failedCommands = 0;
               break;
             case "hint":
@@ -230,6 +233,13 @@ var app = {
                 } else {
                   this.textArray.push("Error table not specified","");
                 }
+              }
+              break;
+            case "hack":
+              if (args[0] == "objective") {
+                this.textArray.push("Current objective: login to the managers account // commands required: login, sql","");
+              } else {
+                this.textArray.push("HACK script has been injected successfully.");
               }
               break;
             case "":
@@ -500,11 +510,9 @@ var app = {
             app.runtime.objects[app.scenes.current_cmd].text += char;
           } else if (e.keyCode == 8) {
             app.runtime.objects[app.scenes.current_cmd].text = app.runtime.objects[app.scenes.current_cmd].text.backspace();
-            console.log(app.runtime.objects[app.scenes.current_cmd]);
           } else if (e.keyCode == 13) {
             app.runtime.objects[app.scenes.current_cmd].commandHandler();
           }
-          console.log(app.runtime.objects[0].text,e.keyCode,String.fromCharCode(e.keyCode));
         }
       }
       this.resizeHandler = function(e) {
