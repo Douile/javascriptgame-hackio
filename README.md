@@ -1,3 +1,9 @@
+# How to set up a local server version
+1) [Download package](https://github.com/TheOnly-Tom/javascriptgame-hackio/archive/master.zip) and extract
+2) Open server.py I recommend navigating to the directory in terminal/cmd and running ` py server.py`
+3) The script will print out the hostname of your local server e.g. `Server starting on host: HOSTNAME`
+4) Navigate to the hostname in your browser
+
 Hack Io | Atom
 --- | ---
 _HackIO is a 100% javascript game._ | [![Atom Image](https://github-atom-io-herokuapp-com.global.ssl.fastly.net/assets/logo-4e073dbd4c0ce67ece1b30a6b31253b9.png)](https://atom.io)
