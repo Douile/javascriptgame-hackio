@@ -576,6 +576,7 @@ var app = {
         left: 5
       }
       this.failedCommands = 0;
+      this.commandLog = [];
       this.vars = {};
       this.varsetup = app.vars.levels[this.level]["vars"]["setup"];
       this.varsetup();
@@ -628,6 +629,14 @@ var app = {
             app.runtime.objects[app.scenes.current_cmd].text = app.runtime.objects[app.scenes.current_cmd].text.backspace();
           } else if (e.keyCode == 13) {
             app.runtime.objects[app.scenes.current_cmd].commandHandler();
+          } else if (e.keyCode == 38) {
+            if (app.runtime.objects[app.scenes.current_cmd].commandLog["current"] > app.runtime.objects[app.scenes.current_cmd].commandLog.length && app.runtime.objects[app.scenes.current_cmd].text != "") {
+              app.runtime.objects[app.scenes.current_cmd].commandLog.push(app.runtime.objects[app.scenes.current_cmd].text);
+            }
+            if (app.runtime.objects[app.scenes.current_cmd].commandLog["current"] > 1) {
+              app.runtime.objects[app.scenes.current_cmd].commandLog["current"] -= 1;
+              app.runtime.objects[app.scenes.current_cmd].text = app.runtime.objects[app.scenes.current_cmd].commandLog[app.runtime.objects[app.scenes.current_cmd].commandLog["current"]];
+            }
           }
         }
       }
@@ -649,7 +658,11 @@ var app = {
         } else {
           this.commandHandlerEx(command,args);
         }
-        this.text = "";
+        if (this.text != "") {
+          this.commandLog.push(this.text);
+          this.commandLog["current"] = this.commandLog.length;
+          this.text = "";
+        }
       }
       this.commandHandlerEx = app.vars.levels[this.level]["cmds"];
       app.events.keydown.funcs.push(this.keyHandler);

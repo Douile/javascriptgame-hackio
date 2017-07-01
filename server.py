@@ -12,7 +12,7 @@ def console():
              if a == "d":
                  s.delall()
      except (KeyboardInterrupt, EOFError):
-         socket.socket().connect((socket.gethostname(),80))
+         socket.socket().connect((socket.gethostname()+".home",80))
 
 def log(data):
      t = time.strftime("%d/%m/%Y %X : ")
@@ -49,8 +49,9 @@ def nofile():
     return rp, code
 class server():
     def __init__(self):
+        self.ip = socket.gethostname()+".home"
         self.sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        self.sock.bind((socket.gethostname(),80))
+        self.sock.bind((self.ip,80))
         self.sock.listen(1024)
         self.threads = []
     def write(self, name, p,
@@ -125,7 +126,7 @@ class server():
             print("Goodbye")
             log("Ended")
     def loop(self):
-        print("Server starting on host: {0}".format(socket.gethostname()))
+        print("Server starting on host: {0}".format(self.ip))
         while 1:
             s, a = self.sock.accept()
             threading.Thread(target=self.conHandle,args=(s,a,)).start()
