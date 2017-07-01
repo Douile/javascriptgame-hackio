@@ -197,13 +197,70 @@ var app = {
     },
     protected: {
 
+    },
+    levels: {
+      ag: {
+        cmds: function(command, args) {
+          switch(command) {
+            case "help":
+              this.textArray.push("","HELP:","cls - clears screen","sql {command} - runs a sql command","hint - prints a hint","login {id} {password} - login to an account","exit","");
+              this.failedCommands = 0;
+              break;
+            case "hint":
+              "try typing sql SELECT * FROM users\r\njeez".download("hint.txt");
+              break;
+            case "sql":
+              if (args.length < 1) {
+                this.textArray.push("Error sql requires arguments:","INSERT","SELECT","TABLES","");
+              }
+              if (args[0] == "tables") {
+                this.textArray.push("Tables in current database:","users","payments","employees","");
+              }
+              if (args[0] == "select") {
+                if (args[1] == "*") {
+                  if (args[2] == "from") {
+                    if (args[3] == "users") {
+                      this.textArray.push("print table data");
+                    } else if (args[3] == "payments" || args[3] == "employees") {
+                      this.textArray.push("Access denied...","");
+                    } else {
+                      this.textArray.push("Unknown table","");
+                    }
+                  }
+                } else {
+                  this.textArray.push("Error table not specified","");
+                }
+              }
+              break;
+            case "":
+              break;
+            default:
+              this.textArray.push("Error command not found: " + command);
+              this.failedCommands += 1;
+              break;
+          }
+          if (this.failedCommands >= 5 && this.text != "") {
+            this.textArray.push(this.failedCommands + " errors in a row try help");
+          }
+        },
+        start: ["Selecting user..."," "," ",
+        "User guest selected"," ",
+        "Setting guest enviroment variables...",
+        "Updating event registry...",
+        "Finding boot log...",
+        "Checking hashed passwords...",
+        "Connecting to data server...",
+        "Data DBA accessed...",
+        " "],
+        next: "l"
+      }
     }
   },
   init: function() { // initializes the app object preparing it for run
     // CONFIG
     app.vars.enviroment.canvas.width = window.innerWidth;
     app.vars.enviroment.canvas.height = window.innerHeight;
-    app.vars.enviroment.title = "TESTING";
+    app.vars.enviroment.title = "HackIo";
     app.vars.enviroment.fps = 60;
     app.vars.enviroment.maxLogSize = 2500;
     // canvas
@@ -314,15 +371,9 @@ var app = {
   		app.log.log("info","App started");
 
       // Objects, scenes and animations
-      new app.scenes.cmd(["Selecting user..."," "," ",
-      "User root selected"," ",
-      "Setting admin enviroment variables...",
-      "Updating event registry...",
-      "Finding boot log...",
-      "Checking hashed passwords...",
-      "Connecting to data server...",
-      "Data DBA accessed...",
-      " "],true);
+      app.vars.protected.save.set("a");
+      app.vars.protected.save.set("g");
+      new app.scenes.cmd();
   	},
   	pause: function(screen) {
   		if (screen != undefined) {
@@ -377,25 +428,21 @@ var app = {
       app.log.log("scene","scrollingText scene started");
       return this;
     },
-    cmd: function(textArray, typeText, onFin) {
+    cmd: function() {
       if (app.scenes.current_cmd != false) {
         app.log.log("error","Only 1 cmd scene can run at a time");
         return 1;
       }
-      if (typeText != true) {
-        this.textArray = textArray;
-        this.typeText = false;
-      } else {
-        this.typeText = true;
-        this.textToType = textArray;
-        this.textArray = [];
-        this.lastTime = getCodeTime();
-        this.map = [];
-        for (i=0;i<this.textToType.length;i++) {
-          this.map.push(this.textToType[i].length-1);
-        }
-        this.cur = {ar: 0, st: 0};
+      this.level = app.vars.protected.save.value();
+      this.typeText = true;
+      this.textToType = app.vars.levels[this.level]["start"];
+      this.textArray = [];
+      this.lastTime = getCodeTime();
+      this.map = [];
+      for (i=0;i<this.textToType.length;i++) {
+        this.map.push(this.textToType[i].length-1);
       }
+      this.cur = {ar: 0, st: 0};
       this.text = "";
       this.bottom = app.vars.enviroment.canvas.height-25;
       this.cursor = {
@@ -413,6 +460,43 @@ var app = {
             if (app.events.keys[16] != true && app.events.keys[20] != true) {
               char = char.toLowerCase();
             }
+            if (e.keyCode > 47 && e.keyCode < 58 && app.events.keys[16] == true) {
+              switch(char) {
+                case "0":
+                  char = ")";
+                  break;
+                case "1":
+                  char = "!";
+                  break;
+                case "2":
+                  char = '"';
+                  break;
+                case "3":
+                  char = "£";
+                  break;
+                case "4":
+                  char = "$";
+                  break;
+                case "5":
+                  char = "%";
+                  break;
+                case "6":
+                  char = "^";
+                  break;
+                case "7":
+                  char = "&";
+                  break;
+                case "8":
+                  char = "*";
+                  break;
+                case "9":
+                  char="(";
+                  break;
+                default:
+                  console.error(char);
+                  break;
+              }
+            }
             app.runtime.objects[app.scenes.current_cmd].text += char;
           } else if (e.keyCode == 8) {
             app.runtime.objects[app.scenes.current_cmd].text = app.runtime.objects[app.scenes.current_cmd].text.backspace();
@@ -423,6 +507,9 @@ var app = {
           console.log(app.runtime.objects[0].text,e.keyCode,String.fromCharCode(e.keyCode));
         }
       }
+      this.resizeHandler = function(e) {
+        app.runtime.objects[app.scenes.current_cmd].cursor["top"] = app.vars.enviroment.canvas.height-25;
+      }
       this.commandHandler = function() {
         temp = this.text.toLowerCase().split(" ");
         command = temp[0];
@@ -430,31 +517,19 @@ var app = {
         for (i=1;i<temp.length;i++) {
           args.push(temp[i]);
         }
-        switch(command) {
-          case "cls":
-            this.textArray = ["Screen cleared."];
-            this.failedCommands = 0;
-            break;
-          case "help":
-            this.textArray.push("","HELP:","mission - prints current mission","cls - clears screen","ls - prints current directory","cd - move directory","");
-            this.failedCommands = 0;
-            break;
-          case "":
-            break;
-          default:
-            this.textArray.push("Error command not found: " + command);
-            this.failedCommands += 1;
-            break;
-        }
-        if (this.failedCommands >= 5 && this.text != "") {
-          this.textArray.push(this.failedCommands + " errors in a row try help");
+        if (command == "cls") {
+          this.textArray = ["Screen cleared."];
+          this.failedCommands = 0;
+        } else if (command == "exit") {
+          location = "https://github.com/TheOnly-Tom/javascriptgame-hackio";
+        } else {
+          this.commandHandlerEx(command,args);
         }
         this.text = "";
       }
+      this.commandHandlerEx = app.vars.levels[this.level]["cmds"];
       app.events.keydown.funcs.push(this.keyHandler);
-      app.events.resize.funcs.push(function(e) {
-        app.runtime.objects[app.scenes.current_cmd].cursor["top"] = app.vars.enviroment.canvas.height-25;
-      })
+      app.events.resize.funcs.push(this.resizeHandler);
       this.draw = function() {
         if (this.typeText == true) {
           if (getCodeTime()-this.lastTime > (Math.floor(Math.random()*5))*1000) {
@@ -504,6 +579,13 @@ var app = {
       app.log.log("scene","cmd scene started");
       index = app.runtime.objects.push(this)-1;
       app.scenes.current_cmd = index;
+      this.end = function() {
+        app.runtime.objects.pop(this);
+        app.events.keydown.funcs.pop(this.keyHandler);
+        app.events.resize.funcs.pop(this.resizeHandler);
+        app.vars.protected.save.set(app.vars.levels[this.level]["l"]);
+        new app.scenes.cmd();
+      }
       return this;
     },
     current_cmd: false
