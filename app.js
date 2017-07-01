@@ -295,9 +295,15 @@ var app = {
   		app.log.log("info","App started");
 
       // Objects, scenes and animations
-      app.runtime.objects.push(new app.scenes.scrollingText(["test","test2","test3"],function() {
-        new app.scenes.cmd(["test","test2","test3","test4"],true);
-      }));
+      new app.scenes.cmd(["Selecting user..."," "," ",
+      "User root selected"," ",
+      "Setting admin enviroment variables...",
+      "Updating event registry...",
+      "Finding boot log...",
+      "Checking hashed passwords...",
+      "Connecting to data server...",
+      "Data DBA accessed...",
+      " "],true);
   	},
   	pause: function(screen) {
   		if (screen != undefined) {
@@ -380,8 +386,9 @@ var app = {
         top: app.vars.enviroment.canvas.height-25,
         left: 5
       }
+      this.failedCommands = 0;
       this.handler = function(e) {
-        if (app.runtime.objects[app.scenes.current_cmd] != true) {
+        if (app.runtime.objects[app.scenes.current_cmd].typeText != true) {
           if ((e.keyCode > 47 && e.keyCode < 91) || e.keyCode == 32) {
             char = String.fromCharCode(e.keyCode)
             if (app.events.keys[16] != true && app.events.keys[20] != true) {
@@ -392,10 +399,30 @@ var app = {
             app.runtime.objects[app.scenes.current_cmd].text = app.runtime.objects[app.scenes.current_cmd].text.backspace();
             console.log(app.runtime.objects[app.scenes.current_cmd]);
           } else if (e.keyCode == 13) {
-            app.runtime.objects[app.scenes.current_cmd].text = "";
+            app.runtime.objects[app.scenes.current_cmd].commandHandler();
           }
           console.log(app.runtime.objects[0].text,e.keyCode,String.fromCharCode(e.keyCode));
         }
+      }
+      this.commandHandler = function() {
+        switch(this.text.toLowerCase()) {
+          case "cls":
+            this.textArray = ["Screen cleared."];
+            this.failedCommands = 0;
+            break;
+          case "help":
+            this.textArray.push("","HELP:","mission - prints current mission","cls - clears screen","");
+            this.failedCommands = 0;
+            break;
+          default:
+            this.textArray.push("Error command not found: " + this.text);
+            this.failedCommands += 1;
+            break;
+        }
+        if (this.failedCommands >= 5) {
+          this.textArray.push("5 errors in a row try help");
+        }
+        this.text = "";
       }
       app.events.keydown.funcs.push(this.handler);
       this.draw = function() {
@@ -438,9 +465,10 @@ var app = {
           }
         }
         app.ctx.fillStyle = "#fff";
+        app.ctx.font = "20px consolas";
         for (i=0;i<this.textArray.length;i++) {
           a = this.textArray.length-i-1;
-          app.ctx.fillText(this.textArray[i],5,this.cursor["top"]-(a*20));
+          app.ctx.fillText(this.textArray[i],5,this.cursor["top"]-(a*20)-5);
         }
       }
       app.log.log("scene","cmd scene started");
