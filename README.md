@@ -1,3 +1,7 @@
+# [Play online](https://Douile.github.io/javascriptgame-hackio/testing.html)
+
+---
+
 # How to set up a local server version
 1) [Download package](https://github.com/TheOnly-Tom/javascriptgame-hackio/archive/1.1.2.zip) and extract
 2) Open server.py I recommend navigating to the directory in terminal/cmd and running ` py server.py`
