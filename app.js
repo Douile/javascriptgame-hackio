@@ -2,9 +2,9 @@
 app.js https://raw.githubusercontent.com/TheOnly-Tom/canvas-game2.0/master/app.js
 published under GNU General Public License v3.0
 author: Tom Hipwell https://github.com/TheOnly-Tom/
-© Tom Hipwell 2017 all rights reserved
+© Tom Hipwell 2018 all rights reserved
 */
-
+(function() {
 // Functions
 function getTime() { // returns time for log
   time = new Date();
@@ -208,6 +208,7 @@ var app = {
     levels: {
       ag: {
         cmds: function(command, args) {
+          this.textArray.push(command+' '+args.join(' '));
           switch(command) {
             case "help":
               this.textArray.push("","HELP:","cls - clears screen","sql {command} - runs a sql command","login {id} {password} - login to an account","exit",
@@ -298,12 +299,8 @@ var app = {
         start: ["Welcome.","To pass the test login to the manager's account."," ","Loading remote access...","Selecting user..."," "," ",
         "User guest selected"," ",
         "Setting guest enviroment variables...",
-        "Updating event registry...",
-        "Finding boot log...",
-        "Checking hashed passwords...",
         "Connecting to data server...",
-        "Data DBA accessed...",
-        " "],
+        " ","Command 'help' will print available commands", " "],
         next: "ld",
         vars: {
           userNames: ["John","Mel","Andrew","David","Alice","Betty","Steve","Bob","Sam","Sammy","Tom","Nick","Olivia","Rose","Sally"],
@@ -328,7 +325,8 @@ var app = {
       },
       agl: {
         cmds: function(command, args) {
-
+          this.textArray.push(command+' '+args.join(' '));
+          
         },
         start: ["Well done.","You have potential..."," ","This one is harder..."," "," ","Find me the password hashes"," ","BOOTING OS/8.5 . . ."],
         vars: {
@@ -736,7 +734,7 @@ mobile();
 app.init(); // calls app init to prepare app
 
 app.runtime.start();
-
+}());
 /*
 HELP
 app.log.print(log type (undefined for verboose), filters: a string containing the filter strings seperated by ; and if non preceded by a !, true to download the log)
